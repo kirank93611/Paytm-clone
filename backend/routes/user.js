@@ -133,7 +133,7 @@ router.get("/bulk", async (req, res) => {
 });
 
 router.post("/transfer", authMiddleware, async (req, res) => {
-  const session = await mongoose.startSession();
+  const session = await momgoose.startSession();
 
   session.startTransaction();
 
@@ -183,7 +183,7 @@ async function transfer(req) {
   const { amount, to } = req.body;
 
   // Fetch the accounts within the transaction
-  const account = await Account.findOne({ userId: req.userId }).session(
+  const account = await accounts.findOne({ userId: req.userId }).session(
     session
   );
 
@@ -193,7 +193,7 @@ async function transfer(req) {
     return;
   }
 
-  const toAccount = await Account.findOne({ userId: to }).session(session);
+  const toAccount = await accounts.findOne({ userId: to }).session(session);
 
   if (!toAccount) {
     await session.abortTransaction();
@@ -223,9 +223,9 @@ async function transfer(req) {
   const { amount, to } = req.body;
 
   // Fetch the accounts within the transaction
-  const account = await accounts
-    .findOne({ userId: req.userId })
-    .session(session);
+  const account = await accounts.findOne({ userId: req.userId }).session(
+    session
+  );
 
   if (!account || account.balance < amount) {
     await session.abortTransaction();
@@ -233,7 +233,7 @@ async function transfer(req) {
     return;
   }
 
-  const toAccount = await Account.findOne({ userId: to }).session(session);
+  const toAccount = await accounts.findOne({ userId: to }).session(session);
 
   if (!toAccount) {
     await session.abortTransaction();
@@ -253,4 +253,20 @@ async function transfer(req) {
   await session.commitTransaction();
   console.log("done");
 }
+
+transfer({
+  userId: "65ac44e10ab2ec750ca666a5",
+  body: {
+    to: "65ac44e40ab2ec750ca666aa",
+    amount: 100,
+  },
+});
+
+transfer({
+  userId: "65ac44e10ab2ec750ca666a5",
+  body: {
+    to: "65ac44e40ab2ec750ca666aa",
+    amount: 100,
+  },
+});
 module.exports = router;
